@@ -305,5 +305,5 @@ $('sp').addEventListener('click',()=>{UI.s=Math.min(1.6,+(UI.s+.1).toFixed(2));a
 $('rs').addEventListener('click',()=>{UI={s:1,p:{}};applyUI()});
 addEventListener('resize',applyUI);addEventListener('orientationchange',()=>setTimeout(applyUI,200));applyUI();
 $('b').onclick=init;
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+if('serviceWorker' in navigator){const had=navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!run)location.reload()});addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
 </script></body></html>
