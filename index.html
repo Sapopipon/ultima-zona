@@ -121,42 +121,67 @@ vm.position.set(.2*(1-ad),-.22+.065*ad-.07*vs-.16*rl+Math.sin(P.ph)*.008*(P.mvv|
 /* ===== Personaje 3D (modelo con esqueleto y animaciones) ===== */
 let MDL=null;
 const TAC=[0x5b6b3a,0xa68a5b,0x6c7480,0x2f3f5c,0x3a3a3a,0x6b4a2f,0x7a3b32,0x3f6b66];
+function mkClips(pf){const clips={},dur={};for(const k in MDL.SRC){const nm=MDL.SRC[k][0],w=MDL.SRC[k][1],c=MDL.by[nm];if(!c)throw Error('falta animación '+nm);
+const tr=c.tracks.filter(t=>w==='A'||(MDL.UP.has(t.name.split('.')[0])===(w==='U'))).map(t=>pf&&t.name==='pelvis.position'?pf(t):t);
+clips[k]=new THREE.AnimationClip(k,c.duration,tr);dur[k]=c.duration}return{clips,dur}}
 function buildMDL(gl){const root=gl.scene,sp=root.getObjectByName('spine_01');if(!sp)throw Error('sin spine_01');
 const UP=new Set();sp.traverse(o=>UP.add(o.name));
 const by={};for(const c of gl.animations)by[c.name]=c;
 /* L = piernas/cadera, U = torso/brazos/cabeza, A = cuerpo completo */
 const SRC={idleL:['Idle_Loop','L'],jogL:['Jog_Fwd_Loop','L'],sprintL:['Sprint_Loop','L'],cIdleL:['Crouch_Idle_Loop','L'],cFwdL:['Crouch_Fwd_Loop','L'],jumpL:['Jump_Loop','L'],proneL:['Swim_Fwd_Loop','L'],proneU:['Swim_Fwd_Loop','U'],aimN:['Pistol_Aim_Neutral','U'],aimUp:['Pistol_Aim_Up','U'],aimDn:['Pistol_Aim_Down','U'],reload:['Pistol_Reload','U'],shoot:['Pistol_Shoot','U'],death:['Death01','A']};
-const clips={},dur={};
-for(const k in SRC){const nm=SRC[k][0],w=SRC[k][1],c=by[nm];if(!c)throw Error('falta animación '+nm);
-const tr=c.tracks.filter(t=>w==='A'||(UP.has(t.name.split('.')[0])===(w==='U')));
-clips[k]=new THREE.AnimationClip(k,c.duration,tr);dur[k]=c.duration}
+MDL={scene:root,SRC,UP,by,bodies:[],tex:{},rm:{}};
+const r=mkClips(null);MDL.clips=r.clips;MDL.dur=r.dur;
 let mM=null,mJ=null;root.traverse(o=>{if(o.isMesh){if(o.material.name==='M_Joints')mJ=o.material;else mM=o.material}});
 if(!mM||!mJ)throw Error('faltan materiales');
-MDL={scene:root,clips,dur,mM,mJ}}
+MDL.mM=mM;MDL.mJ=mJ}
+/* personajes Ranger (varón y mujer): mismo esqueleto, se ajusta la altura de la cadera */
+const BODYCFG={ranger_m:{lift:.008,gun:[-.0066,.0845,.0826]},ranger_f:{lift:.02,gun:[-.004,.0713,.0844]}};
+function addBody(gl,cfg){const root=gl.scene,pu=MDL.scene.getObjectByName('pelvis').position,pg=root.getObjectByName('pelvis').position,k=pg.z/pu.z;
+const pf=t=>{const v=Array.from(t.values),n=v.length/3;for(let i=0;i<n;i++){v[i*3]=(v[i*3]-pu.x)*k+pg.x;v[i*3+1]=(v[i*3+1]-pu.y)*k+pg.y;v[i*3+2]=(v[i*3+2]-pu.z)*k+pg.z}return new THREE.VectorKeyframeTrack(t.name,t.times,v)};
+const r=mkClips(pf);let mR=null,mS=null;root.traverse(o=>{if(o.isMesh){if(o.material.name==='MI_Ranger')mR=o.material;else if(o.material.name==='MI_Skin')mS=o.material}});
+if(!mR||!mS)throw Error('materiales ranger');
+MDL.bodies.push({scene:root,clips:r.clips,lift:cfg.lift,po:.3,gun:cfg.gun,mR,mS})}
+function loadBodies(cb){let pend=1;const fin=()=>{if(--pend===0)cb()};
+const gl=new THREE.GLTFLoader(),tl=new THREE.TextureLoader();
+for(const nm of ['ranger_m','ranger_f']){pend++;gl.load(nm+'.glb',g=>{try{addBody(g,BODYCFG[nm])}catch(er){console.warn(er)}fin()},undefined,er=>{console.warn(er);fin()})}
+for(const c of ['verde','arena','gris','rojo']){pend++;tl.load('ranger_'+c+'.jpg',t=>{t.flipY=false;t.anisotropy=4;MDL.tex[c]=t;fin()},undefined,er=>{console.warn(er);fin()})}
+fin()}
 function mkEntM(n,bot){
 const p=free(),g=new THREE.Group(),R4=a=>a[Math.floor(Math.random()*a.length)],sk=R4([0xf4d0ae,0xe8b58d,0xc98c62,0x9a6348,0x70452f]);
-const mdl=THREE.SkeletonUtils.clone(MDL.scene);mdl.rotation.y=Math.PI;g.add(mdl);
+const B=(MDL.bodies.length&&MDL.tex.verde)?R4(MDL.bodies):null;
+const mdl=THREE.SkeletonUtils.clone(B?B.scene:MDL.scene);mdl.rotation.y=Math.PI;g.add(mdl);
+const hand=mdl.getObjectByName('hand_r'),head=mdl.getObjectByName('Head'),chest=mdl.getObjectByName('spine_03');
+let CL=MDL.clips;
+if(B){CL=B.clips;mdl.position.y=B.lift;
+if(!MDL.cols){MDL.cols=['arena','gris','rojo'].filter(c=>MDL.tex[c]);if(!MDL.cols.length)MDL.cols=['verde']}
+const col=bot?R4(MDL.cols):'verde';
+const mR=MDL.rm[col]||(MDL.rm[col]=(()=>{const m=B.mR.clone();m.map=MDL.tex[col];m.color.setHex(0xffffff);m.roughness=.85;m.metalness=0;m.skinning=true;return m})());
+const mS=B.mS.clone();mS.color.setHex(sk);mS.skinning=true;
+mdl.traverse(o=>{if(o.isMesh){o.material=o.material.name==='MI_Skin'?mS:mR;o.castShadow=true;o.receiveShadow=true}});
+/* cara en sombra dentro de la capucha */
+MDL.fm=MDL.fm||new THREE.MeshStandardMaterial({color:0x17110d,roughness:1});MDL.gF=MDL.gF||new THREE.SphereGeometry(1,12,10);
+const fA=new THREE.Group();fA.position.set(0,.10,.015);head.add(fA);const fms=new THREE.Mesh(MDL.gF,MDL.fm);fms.scale.set(.08,.10,.095);fA.add(fms)}
+else{
 const mM=MDL.mM.clone(),mJ=MDL.mJ.clone();mM.color.setHex(bot?R4(TAC):0x3fae6a);mJ.color.setHex(0x2b2f36);mM.skinning=mJ.skinning=true;
 mdl.traverse(o=>{if(o.isMesh){o.material=o.material.name==='M_Joints'?mJ:mM;o.castShadow=true;o.receiveShadow=true}});
-const hand=mdl.getObjectByName('hand_r'),head=mdl.getObjectByName('Head'),chest=mdl.getObjectByName('spine_03');
-/* arma en la mano derecha */
-const gn=new THREE.Group();gn.position.set(-.0049,.089,.0819);gn.quaternion.set(.6381,-.0249,.0066,.7695);gn.scale.setScalar(.8);hand.add(gn);
-const gg={};for(const k of AK){gg[k]=mkGun(k);gn.add(gg[k])}
-const fl=new THREE.Mesh(new THREE.SphereGeometry(.2,8,6),new THREE.MeshBasicMaterial({color:0xffdd55}));fl.visible=false;gn.add(fl);
 /* casco y chaleco */
 MDL.dk=MDL.dk||new THREE.MeshStandardMaterial({color:0x3d4a3a,roughness:.7});MDL.vmat=MDL.vmat||new THREE.MeshStandardMaterial({color:0x2b3329,roughness:.8});
 MDL.gH=MDL.gH||new THREE.SphereGeometry(1,14,8,0,Math.PI*2,0,Math.PI/2);MDL.gV=MDL.gV||new THREE.CylinderGeometry(1,1,1,16,1);
 const hA=new THREE.Group();hA.position.set(0,.1311,-.01);hA.quaternion.set(-.0163,0,0,.9999);head.add(hA);
 const hms=new THREE.Mesh(MDL.gH,MDL.dk);hms.scale.set(.115,.15,.14);hms.castShadow=true;hA.add(hms);
 const vA=new THREE.Group();vA.position.set(0,.0256,-.0123);vA.quaternion.set(.0162,0,0,.9999);chest.add(vA);
-const vsh=new THREE.Mesh(MDL.gV,MDL.vmat);vsh.scale.set(.19,.30,.165);vsh.castShadow=true;vA.add(vsh);
+const vsh=new THREE.Mesh(MDL.gV,MDL.vmat);vsh.scale.set(.19,.30,.165);vsh.castShadow=true;vA.add(vsh)}
+/* arma en la mano derecha */
+const gn=new THREE.Group();gn.position.set(...(B?B.gun:[-.0049,.089,.0819]));gn.quaternion.set(.6381,-.0249,.0066,.7695);gn.scale.setScalar(.8);hand.add(gn);
+const gg={};for(const k of AK){gg[k]=mkGun(k);gn.add(gg[k])}
+const fl=new THREE.Mesh(new THREE.SphereGeometry(.2,8,6),new THREE.MeshBasicMaterial({color:0xffdd55}));fl.visible=false;gn.add(fl);
 const sd=new THREE.Mesh(new THREE.CircleGeometry(.7,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3}));sd.rotation.x=-Math.PI/2;sd.position.y=.03;g.add(sd);
 /* animaciones */
 const mixer=new THREE.AnimationMixer(mdl),A={};
-for(const k in MDL.clips){const a=mixer.clipAction(MDL.clips[k]);a.play();a.enabled=false;A[k]=a}
+for(const k in CL){const a=mixer.clipAction(CL[k]);a.play();a.enabled=false;A[k]=a}
 for(const k of ['death','reload','shoot']){A[k].setLoop(THREE.LoopOnce,1);A[k].clampWhenFinished=true}
 g.rotation.order='YXZ';world.add(g);
-return{x:p.x,z:p.z,yaw:0,pit:0,hp:100,w:'pistola',cd:0,bot,name:n,k:0,dead:false,m:g,gn,goal:null,gt:0,s:Math.random()<.5?1:-1,lt:Math.random(),t:null,lg:[],fl,gg,sd,sk,st:0,cr:0,pr:0,y:0,vy:0,hy:1.15,hr:.8,yo:0,ft:0,ph:0,ox:p.x,oz:p.z,mx:mixer,A,spS:0,air:0,dw:0,rw:0,shW:0,fired:false,adt:0}}
+return{x:p.x,z:p.z,yaw:0,pit:0,hp:100,w:'pistola',cd:0,bot,name:n,k:0,dead:false,m:g,gn,goal:null,gt:0,s:Math.random()<.5?1:-1,lt:Math.random(),t:null,lg:[],fl,gg,sd,sk,st:0,cr:0,pr:0,y:0,vy:0,hy:1.15,hr:.8,yo:0,ft:0,ph:0,ox:p.x,oz:p.z,mx:mixer,A,po:B?B.po:.4,spS:0,air:0,dw:0,rw:0,shW:0,fired:false,adt:0}}
 function setW(a,w){if(w<.004){a.enabled=false}else{a.enabled=true;a.setEffectiveWeight(w)}}
 /* mezcla de capas: piernas según movimiento, torso/brazos apuntando */
 function animM(e,dt,sp,vf){
@@ -176,9 +201,9 @@ let us=0;for(const k in U)us+=U[k];us=us||1;
 const al=1-e.dw;
 for(const k in L)setW(A[k],L[k]/ls*al);for(const k in U)setW(A[k],U[k]/us*al);setW(A.death,e.dw);
 A.jogL.timeScale=dir*cl(s2/4.7,.55,1.9);A.sprintL.timeScale=dir*cl(s2/8,.8,1.7);A.cFwdL.timeScale=dir*cl(s2/2,.6,2.3);
-A.proneL.timeScale=s2>.35?cl(s2/.9,.5,2.5):0;A.proneU.timeScale=A.proneL.timeScale;A.reload.timeScale=MDL.dur.reload/1.4}
+const pdr=MDL.dur.proneL,pph=((A.proneL.time%pdr)+pdr)%pdr;A.proneL.timeScale=s2>.35?cl(s2/.9,.5,2.5):(Math.abs(pph-.5)<.08?0:1.2);A.proneU.timeScale=0;A.proneU.time=.5;A.reload.timeScale=MDL.dur.reload/1.4}
 function animLoop(e,dt,sp,vf,pr,y0){try{
-e.m.rotation.set(0,e.yaw,0);e.m.position.set(e.x,y0+(e.dead?0:.4*pr),e.z);e.sd.visible=!e.dead&&pr<.5;
+e.m.rotation.set(0,e.yaw,0);e.m.position.set(e.x,y0+(e.dead?0:(e.po||.4)*pr),e.z);e.sd.visible=!e.dead&&pr<.5;
 for(const q in e.gg)e.gg[q].visible=q===e.w;e.fl.position.set(0,.04,MZ[e.w]);
 const dx=e.x-cam.position.x,dz=e.z-cam.position.z,d2=dx*dx+dz*dz;
 if(e!==P)e.m.visible=d2<22500;
@@ -397,8 +422,8 @@ addEventListener('resize',applyUI);addEventListener('orientationchange',()=>setT
 const done=()=>{if(fin)return;fin=true;bt.disabled=false;bt.textContent=t0};
 if(!(THREE.GLTFLoader&&THREE.SkeletonUtils))return;
 bt.disabled=true;bt.textContent='Cargando personajes…';
-const to=setTimeout(done,20000);
-new THREE.GLTFLoader().load('personaje.glb',gl=>{if(fin)return;try{buildMDL(gl)}catch(er){console.warn(er);MDL=null}clearTimeout(to);done()},undefined,er=>{console.warn(er);clearTimeout(to);done()})})();
+const to=setTimeout(done,30000);
+new THREE.GLTFLoader().load('personaje.glb',gl=>{if(fin)return;try{buildMDL(gl)}catch(er){console.warn(er);MDL=null}if(MDL)loadBodies(()=>{clearTimeout(to);done()});else{clearTimeout(to);done()}},undefined,er=>{console.warn(er);clearTimeout(to);done()})})();
 $('b').onclick=init;
 if('serviceWorker' in navigator){const had=navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!run)location.reload()});addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
 </script></body></html>
