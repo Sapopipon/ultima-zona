@@ -85,6 +85,12 @@ p{line-height:1.5;margin:.4rem 0}
 <div id="lrail"><button data-t="home" class="on">INICIO</button><button data-t="char">PERSONAJE</button><button data-t="help">AYUDA</button></div>
 <div id="lpanel"><div id="lph"></div><div id="lt"></div></div>
 <button id="lp" disabled>Cargando…</button></div>
+<script>
+/* Reporte de errores en pantalla (toca el cuadro rojo para cerrarlo) */
+(function(){var n=0;window.showErr=function(er,w){try{if(n>3500)return;var m=(w||'')+(er&&er.stack?String(er.stack).split('\n').slice(0,4).join(' | '):String(er&&er.message||er));n+=m.length;var e=document.getElementById('err');if(!e){e=document.createElement('pre');e.id='err';e.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;max-height:45%;overflow:auto;z-index:99;background:rgba(120,0,0,.92);color:#fff;font:11px/1.35 monospace;padding:8px;white-space:pre-wrap;border-radius:8px;margin:0';e.onclick=function(){e.remove()};document.body.appendChild(e)}e.textContent+=m+'\n\n'}catch(x){}};
+window.addEventListener('error',function(ev){showErr(ev.error||ev.message,'[error] ')});window.addEventListener('unhandledrejection',function(ev){showErr(ev.reason,'[promesa] ')});
+var ce=console.error;console.error=function(){ce.apply(console,arguments);try{showErr(Array.prototype.map.call(arguments,function(x){return String(x).slice(0,300)}).join(' '),'[consola] ')}catch(x){}}})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
@@ -388,7 +394,8 @@ function lobbyEnter(){run=false;fireOn=false;aim=false;sprint=false;if(typeof vm
 document.body.classList.add('lobby');$('ov').classList.add('h');$('lobby').classList.remove('h');document.exitPointerLock&&document.exitPointerLock();
 if(world)sc.remove(world);world=new THREE.Group();sc.add(world);pv=null;buildLG();LG.visible=true;lobbyPreview();renderLobbyUI();
 if(!lobOn){lobOn=true;lobLast=performance.now();requestAnimationFrame(lobbyLoop)}}
-function startGame(){if(!READY)return;SV.name=String(SV.name||'Vos').trim().slice(0,12)||'Vos';saveSV();syncLobby();lobOn=false;if(LG)LG.visible=false;pv=null;$('lobby').classList.add('h');document.body.classList.remove('lobby');init()}
+function startGame(){if(!READY)return;SV.name=String(SV.name||'Vos').trim().slice(0,12)||'Vos';saveSV();syncLobby();lobOn=false;if(LG)LG.visible=false;pv=null;$('lobby').classList.add('h');document.body.classList.remove('lobby');
+try{init()}catch(er){showErr(er,'[init] ');if(PK.city||PK.nat){PK.city=null;PK.nat=null;try{init();showErr('Se usó el mundo básico porque fallaron los modelos nuevos.','[aviso] ')}catch(er2){showErr(er2,'[init 2] ')}}}}
 function toast(t){const e=$('lt');e.textContent=t;clearTimeout(toastT);toastT=setTimeout(()=>{e.textContent=''},2200)}
 function renderLobbyUI(){const lv=1+Math.floor(SV.xp/100);
 if($('lname').value!==SV.name)$('lname').value=SV.name;$('lav').textContent=String(SV.name||'V')[0].toUpperCase();$('llv').textContent='Nivel '+lv;$('lxpf').style.width=(SV.xp%100)+'%';$('lgold').textContent='🪙 '+SV.gold;
@@ -515,11 +522,11 @@ const c=$('mm').getContext('2d'),k=130/MAP;c.clearRect(0,0,130,130);c.fillStyle=
 if(z.g){c.strokeStyle='#fff';c.beginPath();c.arc(z.g.x*k,z.g.z*k,z.g.r*k,0,6.283);c.stroke()}
 c.fillStyle='#3ddc84';c.beginPath();c.arc(P.x*k,P.z*k,3,0,6.283);c.fill();c.strokeStyle='#3ddc84';c.beginPath();c.moveTo(P.x*k,P.z*k);c.lineTo(P.x*k-Math.sin(P.yaw)*8,P.z*k-Math.cos(P.yaw)*8);c.stroke();pings=pings.filter(q=>q.t>T);{const ph=(T*2.5)%1;for(const q of pings){const a=Math.min(1,(q.t-T)/1.6);c.lineWidth=2;c.strokeStyle='rgba(255,190,40,'+a*(1-ph)+')';c.beginPath();c.arc(q.x*k,q.z*k,3+ph*10,0,6.283);c.stroke();c.fillStyle='rgba(255,190,40,'+a+')';c.beginPath();c.arc(q.x*k,q.z*k,2.2,0,6.283);c.fill()}}
 hits=hits.filter(q=>q.t>T);let ds='';for(const q of hits){const a=Math.min(1,(q.t-T)/1.5),dx=q.e.x-P.x,dz=q.e.z-P.z,an=Math.atan2(dz,dx),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),rt=Math.atan2(dx*cy-dz*sy,-dx*sy-dz*cy);c.strokeStyle='rgba(255,50,50,'+a+')';c.lineWidth=4;c.beginPath();c.arc(P.x*k,P.z*k,13,an-.4,an+.4);c.stroke();c.fillStyle='rgba(255,60,60,'+a+')';c.beginPath();c.arc(q.e.x*k,q.e.z*k,3+2*Math.sin(T*14),0,6.283);c.fill();ds+='<div style="transform:rotate('+rt+'rad);opacity:'+a+'"><i></i></div>'}$('di').innerHTML=ds}
-function loop(n){if(!run)return;if(editing){last=n;ren.render(sc,cam);requestAnimationFrame(loop);return}if(touch&&innerHeight>innerWidth){last=n;requestAnimationFrame(loop);return}const dt=Math.min(.05,(n-last)/1000);last=n;update(dt);camUpdate();fx(dt);ren.render(sc,cam);hud();gov(dt);requestAnimationFrame(loop)}
+function loop(n){if(!run)return;if(editing){last=n;ren.render(sc,cam);requestAnimationFrame(loop);return}if(touch&&innerHeight>innerWidth){last=n;requestAnimationFrame(loop);return}const dt=Math.min(.05,(n-last)/1000);last=n;try{update(dt);camUpdate();fx(dt);ren.render(sc,cam);hud();gov(dt)}catch(er){showErr(er,'[loop] ');run=false;return}requestAnimationFrame(loop)}
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(k==='r')reload();if(k===' '){e.preventDefault();jump()}if(k==='v')toggleView();if(k==='c')setSt(P&&P.st===1?0:1);if(k==='z')setSt(P&&P.st===2?0:2)});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 addEventListener('mousemove',e=>{if(run&&!over&&document.pointerLockElement){const ms=aim?.45:1;P.yaw-=e.movementX*.0025*ms;P.pit=Math.max(-.5,Math.min(.7,P.pit-e.movementY*.0025*ms))}});
 ren.domElement.addEventListener('mousedown',e=>{if(!run||over)return;if(!document.pointerLockElement){ren.domElement.requestPointerLock();return}if(e.button===2){aim=true;sprint=false}else fireOn=true});addEventListener('mouseup',e=>{if(e.button===2)aim=false;else fireOn=false});ren.domElement.addEventListener('contextmenu',e=>e.preventDefault());
-const cvs=ren.domElement,rg=$('ring');
+const cvs=ren.domElement,rg=$('ring');cvs.addEventListener('webglcontextlost',()=>showErr('Se perdió el contexto WebGL (memoria de video).','[webgl] '));
 cvs.addEventListener('touchstart',e=>{e.preventDefault();if(editing)return;touch=true;document.body.classList.add('touch');for(const t of e.changedTouches){if(t.clientX<innerWidth/2){if(!L){L={id:t.identifier,x0:t.clientX,y0:t.clientY,x:t.clientX,y:t.clientY};rg.style.left=t.clientX+'px';rg.style.top=t.clientY+'px';rg.style.display='block'}}else if(!Rl)Rl={id:t.identifier,x:t.clientX,y:t.clientY}}},{passive:false});
 cvs.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){if(L&&L.id===t.identifier){L.x=t.clientX;L.y=t.clientY}if(Rl&&Rl.id===t.identifier&&run&&!over){const sn=.006*(aim?.45:1);P.yaw-=(t.clientX-Rl.x)*sn;P.pit=Math.max(-.5,Math.min(.7,P.pit-(t.clientY-Rl.y)*sn));Rl.x=t.clientX;Rl.y=t.clientY}}},{passive:false});
 const te=e=>{for(const t of e.changedTouches){if(L&&L.id===t.identifier){L=null;rg.style.display='none'}if(Rl&&Rl.id===t.identifier)Rl=null}};cvs.addEventListener('touchend',te);cvs.addEventListener('touchcancel',te);
