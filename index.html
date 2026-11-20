@@ -178,33 +178,35 @@ if(!mM||!mJ)throw Error('faltan materiales');
 MDL.mM=mM;MDL.mJ=mJ}
 /* personajes Ranger (varón y mujer): mismo esqueleto, se ajusta la altura de la cadera */
 const BODYCFG={ranger_m:{lift:.008,gun:[-.0066,.0845,.0826]},ranger_f:{lift:.02,gun:[-.004,.0713,.0844]}};
-function addBody(gl,cfg){const root=gl.scene,pu=MDL.scene.getObjectByName('pelvis').position,pg=root.getObjectByName('pelvis').position,k=pg.z/pu.z;
+function addBody(gl,cfg,id){const root=gl.scene,pu=MDL.scene.getObjectByName('pelvis').position,pg=root.getObjectByName('pelvis').position,k=pg.z/pu.z;root.scale.setScalar(1/k);
 const pf=t=>{const v=Array.from(t.values),n=v.length/3;for(let i=0;i<n;i++){v[i*3]=(v[i*3]-pu.x)*k+pg.x;v[i*3+1]=(v[i*3+1]-pu.y)*k+pg.y;v[i*3+2]=(v[i*3+2]-pu.z)*k+pg.z}return new THREE.VectorKeyframeTrack(t.name,t.times,v)};
-const r=mkClips(pf);let mR=null,mS=null;root.traverse(o=>{if(o.isMesh){if(o.material.name==='MI_Ranger')mR=o.material;else if(o.material.name==='MI_Skin')mS=o.material}});
+const r=mkClips(pf);let mR=null,mS=null;root.traverse(o=>{if(o.isMesh){const n=o.material.name;if(n==='MI_Ranger'||n==='Body_001_material')mR=o.material;else if(n==='MI_Skin'||n==='Body_material')mS=o.material}});
 if(!mR||!mS)throw Error('materiales ranger');
-MDL.bodies.push({scene:root,clips:r.clips,lift:cfg.lift,po:.3,gun:cfg.gun,mR,mS})}
+MDL.bodies.push({id,scene:root,clips:r.clips,lift:cfg.lift,po:.3,gun:cfg.gun,mR,mS})}
 function loadBodies(cb){let pend=1;const fin=()=>{if(--pend===0)cb()};
-const gl=new THREE.GLTFLoader(),tl=new THREE.TextureLoader();
-for(const nm of ['ranger_m','ranger_f']){pend++;gl.load(nm+'.glb',g=>{try{addBody(g,BODYCFG[nm])}catch(er){console.warn(er)}fin()},undefined,er=>{console.warn(er);fin()})}
-for(const c of ['verde','arena','gris','rojo']){pend++;tl.load('ranger_'+c+'.jpg',t=>{t.flipY=false;t.anisotropy=4;MDL.tex[c]=t;fin()},undefined,er=>{console.warn(er);fin()})}
+const gl=new THREE.GLTFLoader();
+for(const id of ['ranger_m','ranger_f']){pend++;gl.load(id+'_cine.glb',g=>{try{addBody(g,BODYCFG[id],id)}catch(er){console.warn(er)}fin()},undefined,er=>{console.warn(er);fin()})}
 fin()}
+const SURFACE_GRAIN=(()=>{const s=128,d=new Uint8Array(s*s*4);for(let y=0;y<s;y++)for(let x=0;x<s;x++){const i=(y*s+x)*4,h=Math.sin(x*12.9898+y*78.233)*43758.5453,n=((h-Math.floor(h))-.5)*16+Math.sin(x*.78)*2.5+Math.sin(y*.78)*2.5;d[i]=Math.max(0,Math.min(255,128+n));d[i+1]=Math.max(0,Math.min(255,210+n));d[i+2]=d[i];d[i+3]=255}const t=new THREE.DataTexture(d,s,s,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,3);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t})();
+function filmSurface(m,kind='cloth'){if(!m.normalMap&&!m.bumpMap){m.bumpMap=SURFACE_GRAIN;m.bumpScale=kind==='skin'?.003:kind==='metal'?.002:.006}if(!m.roughnessMap)m.roughnessMap=SURFACE_GRAIN;m.roughness=kind==='skin'?.74:kind==='metal'?.56:.88;m.metalness=kind==='metal'?.24:kind==='skin'?0:.025;m.needsUpdate=true;return m}
 function mkEntM(n,bot){
 const p=free(),g=new THREE.Group(),R4=a=>a[Math.floor(Math.random()*a.length)],sk=R4([0xf4d0ae,0xe8b58d,0xc98c62,0x9a6348,0x70452f]);
-const B=(MDL.bodies.length&&MDL.tex.verde)?R4(MDL.bodies):null;
+const B=MDL.bodies.length?R4(MDL.bodies):null;
 const mdl=THREE.SkeletonUtils.clone(B?B.scene:MDL.scene);mdl.rotation.y=Math.PI;g.add(mdl);
 const hand=mdl.getObjectByName('hand_r'),head=mdl.getObjectByName('Head'),chest=mdl.getObjectByName('spine_03');
 let CL=MDL.clips;
 if(B){CL=B.clips;mdl.position.y=B.lift;
-if(!MDL.cols){MDL.cols=['arena','gris','rojo'].filter(c=>MDL.tex[c]);if(!MDL.cols.length)MDL.cols=['verde']}
+if(!MDL.cols){MDL.cols=['arena','gris','rojo']}
 const col=bot?R4(MDL.cols):'verde';
-const mR=MDL.rm[col]||(MDL.rm[col]=(()=>{const m=B.mR.clone();m.map=MDL.tex[col];m.color.setHex(0xffffff);m.roughness=.85;m.metalness=0;m.skinning=true;return m})());
-const mS=B.mS.clone();mS.color.setHex(sk);mS.skinning=true;
-mdl.traverse(o=>{if(o.isMesh){o.material=o.material.name==='MI_Skin'?mS:mR;o.castShadow=true;o.receiveShadow=true}});
+const tint={verde:0xffffff,arena:0xe1d0ad,gris:0xc5c8cc,rojo:0xc87970},key=B.id+':'+col;
+const mR=MDL.rm[key]||(MDL.rm[key]=(()=>{const m=B.mR.clone();m.color.setHex(tint[col]||0xffffff);filmSurface(m,'cloth');m.skinning=true;return m})());
+const mS=B.mS.clone();mS.color.setHex(sk);filmSurface(mS,'skin');mS.skinning=true;
+mdl.traverse(o=>{if(o.isMesh){o.material=o.material.name==='MI_Skin'||o.material.name==='Body_material'?mS:mR;o.castShadow=true;o.receiveShadow=true}});
 /* cara en sombra dentro de la capucha */
-MDL.fm=MDL.fm||new THREE.MeshStandardMaterial({color:0x17110d,roughness:1});MDL.gF=MDL.gF||new THREE.SphereGeometry(1,12,10);
+MDL.fm=MDL.fm||filmSurface(new THREE.MeshStandardMaterial({color:0x211f1b}), 'cloth');MDL.gF=MDL.gF||new THREE.SphereGeometry(1,12,10);
 const fA=new THREE.Group();fA.position.set(0,.10,.015);head.add(fA);const fms=new THREE.Mesh(MDL.gF,MDL.fm);fms.scale.set(.08,.10,.095);fA.add(fms)}
 else{
-const mM=MDL.mM.clone(),mJ=MDL.mJ.clone();mM.color.setHex(bot?R4(TAC):0x3fae6a);mJ.color.setHex(0x2b2f36);mM.skinning=mJ.skinning=true;
+const mM=filmSurface(MDL.mM.clone(),'cloth'),mJ=filmSurface(MDL.mJ.clone(),'metal');mM.color.setHex(bot?R4(TAC):0x3fae6a);mJ.color.setHex(0x2b2f36);mM.skinning=mJ.skinning=true;
 mdl.traverse(o=>{if(o.isMesh){o.material=o.material.name==='M_Joints'?mJ:mM;o.castShadow=true;o.receiveShadow=true}});
 /* casco y chaleco */
 MDL.dk=MDL.dk||new THREE.MeshStandardMaterial({color:0x3d4a3a,roughness:.7});MDL.vmat=MDL.vmat||new THREE.MeshStandardMaterial({color:0x2b3329,roughness:.8});
