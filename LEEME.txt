@@ -1,15 +1,23 @@
 ÚLTIMA ZONA 3D – versión instalable (PWA)
 
+Novedades de esta versión
+- Podés ENTRAR en las casas: tienen puerta, paredes, ventanas, piso y techo (piezas del pack Downtown City MegaKit).
+  Adentro hay botiquines, armas y munición. Los bots también entran a buscar botín.
+- Cada enemigo que abatís te devuelve 25 de vida (hasta un máximo de 100). Se puede cambiar en index.html: KILL_HEAL=25.
+- Árboles, arbustos, rocas, pasto y flores del pack Stylized Nature MegaKit.
+- La cámara en 3ª persona ya no atraviesa las paredes, y el minimapa muestra las casas.
+- Sin internet o si no cargan los modelos nuevos, el juego usa las casas macizas de antes (no se rompe).
+
 Qué hace
 - Se instala en el celular como una app, con ícono propio.
 - Se abre a pantalla completa y en horizontal.
 - Funciona sin internet después de abrirla una vez con conexión.
 
-Cómo usarla (hace falta subir estos 5 archivos a un hosting con HTTPS)
-1) Subí TODOS los archivos de esta carpeta, juntos y sin cambiarles el nombre, a un hosting estático gratuito:
+Cómo usarla (hace falta subir TODOS los archivos a un hosting con HTTPS)
+1) Subí TODOS los archivos de esta carpeta, juntos y sin cambiarles el nombre (incluidos ciudad.glb y naturaleza.glb), a un hosting estático gratuito:
    GitHub Pages, Netlify (Drop), Cloudflare Pages o Vercel.
 2) Abrí la dirección que te den desde Chrome en el celular y esperá a que cargue (con internet).
 3) Menú de Chrome (tres puntos) > "Instalar app" o "Agregar a la pantalla principal".
 4) Abrila desde el ícono. Probá una vez en modo avión para confirmar que anda sin internet.
 
-Si actualizás el juego, cambiá V='uz-v1' por V='uz-v2' en sw.js para que los celulares bajen la versión nueva.
+Si actualizás el juego, cambiá V='uz-v3' por V='uz-v4' en sw.js para que los celulares bajen la versión nueva.
