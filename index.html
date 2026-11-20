@@ -20,6 +20,7 @@ canvas{display:block}
 #hf{position:absolute;left:0;top:0;bottom:0;background:#3ddc84}
 #ht{position:relative;line-height:22px;font-weight:700}
 #wt{margin-top:5px;background:rgba(0,0,0,.55);border-radius:4px;padding:3px}
+body.touch #bt{top:calc(76px + env(safe-area-inset-top,0px));bottom:auto;width:min(280px,42vw);opacity:.88}
 #hm{position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px;opacity:0;background:linear-gradient(45deg,transparent 45%,#fff 45% 55%,transparent 55%),linear-gradient(-45deg,transparent 45%,#fff 45% 55%,transparent 55%)}
 #dm{position:absolute;inset:0;background:radial-gradient(transparent 40%,rgba(220,30,30,.6));opacity:0}
 #hlg{position:absolute;inset:0;background:radial-gradient(transparent 40%,rgba(60,220,130,.5));opacity:0}
@@ -481,7 +482,7 @@ const rc=(e.ft>0?.12:0)+(e.pt>0?.7*Math.sin((1-e.pt/.3)*Math.PI):0);e.lg[0].rota
 e.gn.rotation.x=1.57*pr;e.gn.position.set(0,1.52+.68*pr,-.56+.42*pr);for(const q in e.gg)e.gg[q].visible=q===e.w;e.fl.position.set(0,.04,MZ[e.w])}
 const al=all.filter(a=>!a.dead);if(!over&&al.length===1&&al[0]===P)end(true)}
 function camUpdate(){const cp=Math.cos(P.pit);DIR.set(-Math.sin(P.yaw)*cp,Math.sin(P.pit),-Math.cos(P.yaw)*cp);
-ad+=((aim?1:0)-ad)*.2;const cd=fpv?0:4.5-2.6*ad,so=fpv?0:.9-.4*ad,tf=aim?(fpv?40:30):(P.spr?62:55);fov+=(tf-fov)*.2;cam.fov=fov;cam.updateProjectionMatrix();const hx0=P.x,hz0=P.z,hy0=Math.max(.4,1.5-.5*P.cr-1.05*P.pr+P.y),ih=inH(P.x,P.z,0);
+ad+=((aim?1:0)-ad)*.2;const cd=fpv?0:3.2-1.6*ad,so=fpv?0:.82-.32*ad,tf=aim?(fpv?40:30):(P.spr?62:55);fov+=(tf-fov)*.2;cam.fov=fov;cam.updateProjectionMatrix();const hx0=P.x,hz0=P.z,hy0=Math.max(.4,1.5-.5*P.cr-1.05*P.pr+P.y),ih=inH(P.x,P.z,0);
 let cx=P.x-DIR.x*cd+Math.cos(P.yaw)*so,cy=Math.max(fpv?.3:.4,(fpv?1.6:1.7)-.5*P.cr-1.05*P.pr+P.y-DIR.y*cd),cz=P.z-DIR.z*cd-Math.sin(P.yaw)*so;
 if(cd>0){const dx=cx-hx0,dy=cy-hy0,dz=cz-hz0,Ld=Math.hypot(dx,dy,dz);if(Ld>.01){const r=cast(V(hx0,hy0,hz0),V(dx/Ld,dy/Ld,dz/Ld),Ld,P,true);if(r.t<Ld){const k=Math.max(.15,r.t-.3)/Ld;cx=hx0+dx*k;cy=hy0+dy*k;cz=hz0+dz*k}}}
 if(ih)cy=Math.min(cy,2.75);hemi.intensity+=((ih?2.1:1.25)-hemi.intensity)*.12;
