@@ -1,6 +1,9 @@
 ÚLTIMA ZONA 3D – versión instalable (PWA)
 
 Novedades de esta versión
+- LOBBY nuevo: tu personaje en 3D (arrastrá para girarlo), nombre, nivel y XP, oro, tienda de trajes, cuerpo y piel,
+  dificultad (Fácil/Normal/Difícil) y estadísticas. Al terminar una partida ganás oro y XP, y volvés al lobby.
+  Tu progreso se guarda en el teléfono (localStorage).
 - Podés ENTRAR en las casas: tienen puerta, paredes, ventanas, piso y techo (piezas del pack Downtown City MegaKit).
   Adentro hay botiquines, armas y munición. Los bots también entran a buscar botín.
 - Cada enemigo que abatís te devuelve 25 de vida (hasta un máximo de 100). Se puede cambiar en index.html: KILL_HEAL=25.
@@ -20,12 +23,4 @@ Cómo usarla (hace falta subir TODOS los archivos a un hosting con HTTPS)
 3) Menú de Chrome (tres puntos) > "Instalar app" o "Agregar a la pantalla principal".
 4) Abrila desde el ícono. Probá una vez en modo avión para confirmar que anda sin internet.
 
-Si actualizás el juego, cambiá V='uz-v3' por V='uz-v4' en sw.js para que los celulares bajen la versión nueva.
-
-NOVEDADES v6
-- Lobby: pantalla de inicio con tu nombre, estadísticas guardadas y "Buscar partida" (cuenta de jugadores 1/20 antes de entrar).
-- Puño: botón "Puño" (PC: tecla F). Si FUEGO está apretado y hay un enemigo pegado, golpea solo. Los bots también pegan.
-- Mochila: los botiquines se guardan (máx. 4, o 8 con mochila grande) y se usan con "Curar" (PC: H). El botón "Mochila" (PC: B) muestra botiquines, balas por arma, chaleco y casco.
-- Balas con tope según la mochila. Mochila grande (naranja) = más espacio.
-- Chaleco y casco nivel 1 (azul) y nivel 2 (violeta): absorben daño y se gastan hasta romperse. Los enemigos eliminados los sueltan.
-- Si actualizás, el service worker ya quedó en 'uz-v6'.
+Si actualizás el juego, cambiá V='uz-v4' por V='uz-v5' en sw.js para que los celulares bajen la versión nueva.
