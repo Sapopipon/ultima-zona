@@ -23,4 +23,4 @@ Cómo usarla (hace falta subir TODOS los archivos a un hosting con HTTPS)
 3) Menú de Chrome (tres puntos) > "Instalar app" o "Agregar a la pantalla principal".
 4) Abrila desde el ícono. Probá una vez en modo avión para confirmar que anda sin internet.
 
-Si actualizás el juego, cambiá V='uz-v5' por V='uz-v6' en sw.js para que los celulares bajen la versión nueva.
+Si actualizás el juego, cambiá V='uz-v7' por V='uz-v8' en sw.js para que los celulares bajen la versión nueva.
