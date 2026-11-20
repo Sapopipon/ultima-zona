@@ -185,10 +185,12 @@ if(!mR||!mS)throw Error('materiales ranger');
 MDL.bodies.push({id,scene:root,clips:r.clips,lift:cfg.lift,po:.3,gun:cfg.gun,mR,mS})}
 function loadBodies(cb){let pend=1;const fin=()=>{if(--pend===0)cb()};
 const gl=new THREE.GLTFLoader();
-for(const id of ['ranger_m','ranger_f']){pend++;gl.load(id+'_sin_capucha.glb',g=>{try{addBody(g,BODYCFG[id],id)}catch(er){console.warn(er)}fin()},undefined,er=>{console.warn(er);fin()})}
+for(const id of ['ranger_m','ranger_f']){pend++;gl.load(id+'_cine.glb',g=>{try{addBody(g,BODYCFG[id],id)}catch(er){console.warn(er)}fin()},undefined,er=>{console.warn(er);fin()})}
 fin()}
 const SURFACE_GRAIN=(()=>{const s=128,d=new Uint8Array(s*s*4);for(let y=0;y<s;y++)for(let x=0;x<s;x++){const i=(y*s+x)*4,h=Math.sin(x*12.9898+y*78.233)*43758.5453,n=((h-Math.floor(h))-.5)*16+Math.sin(x*.78)*2.5+Math.sin(y*.78)*2.5;d[i]=Math.max(0,Math.min(255,128+n));d[i+1]=Math.max(0,Math.min(255,210+n));d[i+2]=d[i];d[i+3]=255}const t=new THREE.DataTexture(d,s,s,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,3);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t})();
 function filmSurface(m,kind='cloth'){if(!m.normalMap&&!m.bumpMap){m.bumpMap=SURFACE_GRAIN;m.bumpScale=kind==='skin'?.003:kind==='metal'?.002:.006}if(!m.roughnessMap)m.roughnessMap=SURFACE_GRAIN;m.roughness=kind==='skin'?.74:kind==='metal'?.56:.88;m.metalness=kind==='metal'?.24:kind==='skin'?0:.025;m.needsUpdate=true;return m}
+/* Oculta únicamente la geometría vinculada al hueso Head; no modifica ni borra la malla. */
+function hideHoodNonDestructive(m){m.onBeforeCompile=sh=>{sh.vertexShader='varying float vHeadWeight;\n'+sh.vertexShader.replace('#include <skinning_vertex>','#include <skinning_vertex>\nfloat hw=0.0;\nif(skinIndex.x==6.0) hw+=skinWeight.x;\nif(skinIndex.y==6.0) hw+=skinWeight.y;\nif(skinIndex.z==6.0) hw+=skinWeight.z;\nif(skinIndex.w==6.0) hw+=skinWeight.w;\nvHeadWeight=hw;');sh.fragmentShader='varying float vHeadWeight;\n'+sh.fragmentShader.replace('#include <dithering_fragment>','if(vHeadWeight>0.5) discard;\n#include <dithering_fragment>')};m.needsUpdate=true;return m}
 function mkEntM(n,bot){
 const p=free(),g=new THREE.Group(),R4=a=>a[Math.floor(Math.random()*a.length)],sk=R4([0xf4d0ae,0xe8b58d,0xc98c62,0x9a6348,0x70452f]);
 const B=MDL.bodies.length?R4(MDL.bodies):null;
@@ -199,7 +201,7 @@ if(B){CL=B.clips;mdl.position.y=B.lift;
 if(!MDL.cols){MDL.cols=['arena','gris','rojo']}
 const col=bot?R4(MDL.cols):'verde';
 const tint={verde:0xffffff,arena:0xe1d0ad,gris:0xc5c8cc,rojo:0xc87970},key=B.id+':'+col;
-const mR=MDL.rm[key]||(MDL.rm[key]=(()=>{const m=B.mR.clone();m.color.setHex(tint[col]||0xffffff);filmSurface(m,'cloth');m.skinning=true;return m})());
+const mR=MDL.rm[key]||(MDL.rm[key]=(()=>{const m=B.mR.clone();m.color.setHex(tint[col]||0xffffff);filmSurface(m,'cloth');hideHoodNonDestructive(m);m.skinning=true;return m})());
 const mS=B.mS.clone();mS.color.setHex(sk);filmSurface(mS,'skin');mS.skinning=true;
 mdl.traverse(o=>{if(o.isMesh){o.material=o.material.name==='MI_Skin'||o.material.name==='Body_material'?mS:mR;o.castShadow=true;o.receiveShadow=true}});
 /* Rostro expuesto: los modelos cinematográficos ya no llevan capucha. */
