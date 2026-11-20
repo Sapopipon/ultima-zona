@@ -65,6 +65,18 @@ p{line-height:1.5;margin:.4rem 0}
 <p id="s">Aterrizás en la isla con 19 bots. Buscá armas, botiquines y munición (¡también dentro de las casas!), mantenete dentro de la zona segura y sé el último en pie. Cada enemigo que abatís te devuelve vida.</p>
 <p>PC: clic para capturar el mouse, WASD mover, mouse mirar, clic disparar, clic derecho apuntar con mira, Shift correr, Espacio saltar, C agachar, Z acostar, V cambiar vista (1ª/3ª persona), R recargar.<br>Celular (poné el teléfono en horizontal): arrastrá a la izquierda para moverte, a la derecha para mirar, y usá los botones FUEGO, Mira, Correr (a la izquierda: corre solo hasta que lo toques de nuevo), Saltar, Agachar, Acostar, Vista (1ª/3ª persona) y Recargar. Con ⚙ Ajustes podés mover y agrandar los botones.</p>
 <button id="b">Jugar</button><button id="vw2">Vista: 3ª persona</button></div></div>
+<script>
+/* ---- diagnóstico: muestra errores en pantalla (tocá el cuadro rojo para ocultarlo) ---- */
+(function(){const seen={};let box;
+function show(m){m=String(m).slice(0,600);if(seen[m]||Object.keys(seen).length>8)return;seen[m]=1;
+if(!box){box=document.createElement('pre');box.style.cssText='position:fixed;left:0;right:0;bottom:0;max-height:50%;overflow:auto;margin:0;padding:8px 12px;background:rgba(120,0,0,.92);color:#fff;font:12px/1.35 monospace;z-index:99;white-space:pre-wrap;user-select:text;-webkit-user-select:text';box.onclick=()=>{box.style.display='none'};(document.body||document.documentElement).appendChild(box)}
+box.style.display='block';box.textContent+=m+'\n\n'}
+window.__err=show;
+addEventListener('error',e=>show('ERROR: '+e.message+' ('+(e.filename||'').split('/').pop()+':'+e.lineno+')'));
+addEventListener('unhandledrejection',e=>show('PROMESA: '+(e.reason&&e.reason.message||e.reason)));
+for(const k of ['error','warn']){const o=console[k];console[k]=function(){try{const t=Array.from(arguments).map(a=>a&&a.message||a).join(' ');if(k==='error'||/THREE|WebGL|shader/i.test(t))show(k.toUpperCase()+': '+t)}catch(e){}return o.apply(console,arguments)}}
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
@@ -75,7 +87,7 @@ escopeta:{n:'Escopeta',d:9,rate:.85,sp:.07,pel:6,rng:45,col:0xff6666,rk:1,mag:6}
 smg:{n:'SMG',d:8,rate:.09,sp:.03,pel:1,rng:75,col:0x66ccff,rk:2,mag:30},
 fusil:{n:'Fusil',d:24,rate:.2,sp:.012,pel:1,rng:160,col:0xffcc44,rk:3,mag:20}};
 const AK=Object.keys(WP),RAD=[260,170,100,55,25,10],NAMES=['Cuervo','Pantera','Tigre','Halcón','Lobo','Yaguá','Zorro','Jaguar','Puma','Águila','Tatú','Carpincho','Colibrí','Víbora','Gato','Oso','Búho','Coyote','Mamba'];
-const ren=new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});let PR=Math.min(1.5,devicePixelRatio);ren.setPixelRatio(PR);ren.outputEncoding=THREE.sRGBEncoding;ren.toneMapping=THREE.ACESFilmicToneMapping;ren.toneMappingExposure=1.18;ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(ren.domElement);
+const ren=new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});let PR=Math.min(1.5,devicePixelRatio);ren.setPixelRatio(PR);ren.outputEncoding=THREE.sRGBEncoding;ren.toneMapping=THREE.ACESFilmicToneMapping;ren.toneMappingExposure=1.18;ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(ren.domElement);ren.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();__err('WebGL: se perdió el contexto gráfico (memoria de video del celular)')});
 const sc=new THREE.Scene();sc.background=new THREE.Color(0x8fc5ed);sc.fog=new THREE.Fog(0xb9dcec,80,290);
 const cam=new THREE.PerspectiveCamera(70,1,.1,400);cam.rotation.order='YXZ';
 function rs(){ren.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',rs);rs();
@@ -450,7 +462,7 @@ const c=$('mm').getContext('2d'),k=130/MAP;c.clearRect(0,0,130,130);c.fillStyle=
 if(z.g){c.strokeStyle='#fff';c.beginPath();c.arc(z.g.x*k,z.g.z*k,z.g.r*k,0,6.283);c.stroke()}
 c.fillStyle='#3ddc84';c.beginPath();c.arc(P.x*k,P.z*k,3,0,6.283);c.fill();c.strokeStyle='#3ddc84';c.beginPath();c.moveTo(P.x*k,P.z*k);c.lineTo(P.x*k-Math.sin(P.yaw)*8,P.z*k-Math.cos(P.yaw)*8);c.stroke();pings=pings.filter(q=>q.t>T);{const ph=(T*2.5)%1;for(const q of pings){const a=Math.min(1,(q.t-T)/1.6);c.lineWidth=2;c.strokeStyle='rgba(255,190,40,'+a*(1-ph)+')';c.beginPath();c.arc(q.x*k,q.z*k,3+ph*10,0,6.283);c.stroke();c.fillStyle='rgba(255,190,40,'+a+')';c.beginPath();c.arc(q.x*k,q.z*k,2.2,0,6.283);c.fill()}}
 hits=hits.filter(q=>q.t>T);let ds='';for(const q of hits){const a=Math.min(1,(q.t-T)/1.5),dx=q.e.x-P.x,dz=q.e.z-P.z,an=Math.atan2(dz,dx),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),rt=Math.atan2(dx*cy-dz*sy,-dx*sy-dz*cy);c.strokeStyle='rgba(255,50,50,'+a+')';c.lineWidth=4;c.beginPath();c.arc(P.x*k,P.z*k,13,an-.4,an+.4);c.stroke();c.fillStyle='rgba(255,60,60,'+a+')';c.beginPath();c.arc(q.e.x*k,q.e.z*k,3+2*Math.sin(T*14),0,6.283);c.fill();ds+='<div style="transform:rotate('+rt+'rad);opacity:'+a+'"><i></i></div>'}$('di').innerHTML=ds}
-function loop(n){if(!run)return;if(editing){last=n;ren.render(sc,cam);requestAnimationFrame(loop);return}if(touch&&innerHeight>innerWidth){last=n;requestAnimationFrame(loop);return}const dt=Math.min(.05,(n-last)/1000);last=n;update(dt);camUpdate();fx(dt);ren.render(sc,cam);hud();gov(dt);requestAnimationFrame(loop)}
+function loop(n){if(!run)return;if(editing){last=n;ren.render(sc,cam);requestAnimationFrame(loop);return}if(touch&&innerHeight>innerWidth){last=n;requestAnimationFrame(loop);return}const dt=Math.min(.05,(n-last)/1000);last=n;const sf=(nm,f)=>{try{f()}catch(er){__err(nm+': '+(er&&er.stack||er))}};sf('update',()=>update(dt));sf('camara',camUpdate);sf('fx',()=>fx(dt));sf('render',()=>ren.render(sc,cam));sf('hud',hud);sf('gov',()=>gov(dt));requestAnimationFrame(loop)}
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(k==='r')reload();if(k===' '){e.preventDefault();jump()}if(k==='v')toggleView();if(k==='c')setSt(P&&P.st===1?0:1);if(k==='z')setSt(P&&P.st===2?0:2)});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 addEventListener('mousemove',e=>{if(run&&!over&&document.pointerLockElement){const ms=aim?.45:1;P.yaw-=e.movementX*.0025*ms;P.pit=Math.max(-.5,Math.min(.7,P.pit-e.movementY*.0025*ms))}});
 ren.domElement.addEventListener('mousedown',e=>{if(!run||over)return;if(!document.pointerLockElement){ren.domElement.requestPointerLock();return}if(e.button===2){aim=true;sprint=false}else fireOn=true});addEventListener('mouseup',e=>{if(e.button===2)aim=false;else fireOn=false});ren.domElement.addEventListener('contextmenu',e=>e.preventDefault());
@@ -492,7 +504,7 @@ $('rs').addEventListener('click',()=>{UI={s:1,p:{}};applyUI()});
 addEventListener('resize',applyUI);addEventListener('orientationchange',()=>setTimeout(applyUI,200));applyUI();
 (function(){const bt=$('b'),t0=bt.textContent;let fin=false,pend=3,to=0;
 const done=()=>{if(fin)return;fin=true;bt.disabled=false;bt.textContent=t0},part=()=>{if(--pend===0){clearTimeout(to);done()}};
-if(!(THREE.GLTFLoader&&THREE.SkeletonUtils))return;
+if(/[?&]safe/.test(location.search)||!(THREE.GLTFLoader&&THREE.SkeletonUtils))return;
 bt.disabled=true;bt.textContent='Cargando…';
 to=setTimeout(done,30000);
 loadPack('ciudad.glb',p=>{PK.city=p;part()});loadPack('naturaleza.glb',p=>{PK.nat=p;part()});
