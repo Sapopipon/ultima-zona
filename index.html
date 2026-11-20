@@ -332,7 +332,7 @@ function inH(x,z,m,only){const L=only?[only]:houses;for(const h of L)if(x>h.x0+m
 const DEPM=new Map();
 function depthFor(mat){if(!(mat.alphaTest>0&&mat.map))return null;let d=DEPM.get(mat.uuid);if(!d){d=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:mat.map,alphaTest:mat.alphaTest});DEPM.set(mat.uuid,d)}return d}
 function flushI(pkg,cs){const dm=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),c=new THREE.Color(),sc1=new THREE.Vector3(),ps=new THREE.Vector3();
-for(const n in IB){const L=IB[n],parts=pkg.mods[n];if(!parts)continue;const anyC=L.some(o=>o.col>=0),cast=cs.has(n);
+for(const n in IB){const L=IB[n],parts=pkg.mods[n];if(!parts)continue;const anyC=true,cast=cs.has(n);/* r128: todas las piezas que comparten material deben tener instanceColor, si no render() falla */
 for(const pt of parts){const im=new THREE.InstancedMesh(pt.geo,pt.mat,L.length);
 L.forEach((o,i)=>{e.set(0,o.ry,0);q.setFromEuler(e);dm.compose(ps.set(o.x,o.y,o.z),q,sc1.set(o.s,o.s,o.s));im.setMatrixAt(i,dm);if(anyC)im.setColorAt(i,c.setHex(o.col>=0?o.col:0xffffff))});
 im.castShadow=cast&&!pt.mat.transparent;im.receiveShadow=true;im.frustumCulled=false;if(pt.mat.transparent)im.renderOrder=2;const d=depthFor(pt.mat);if(d)im.customDepthMaterial=d;world.add(im)}}
