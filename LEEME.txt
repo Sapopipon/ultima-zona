@@ -1,6 +1,9 @@
 ÚLTIMA ZONA 3D – versión instalable (PWA)
 
 Novedades de esta versión
+- ELEGÍ TU PERSONAJE en el lobby (pestaña Personaje): Ranger, Ranger mujer, Hombre base y Mujer base son gratis; Atleta 700, Ninja 800,
+  Médico de la peste 900, Guerrero de cuero 1000, Cyborg 1200 y Samurái 1500 se compran con oro. Cada uno se descarga la primera vez que lo elegís.
+  Archivos: char_*.glb y th_*.webp (subilos todos).
 - MODOS: Solo, Dúo (vos + 1 aliado vs 9 equipos de 2) y Trío (vos + 2 aliados vs 6 equipos de 3). Los aliados son bots que te siguen,
   no reciben fuego amigo y se ven en el minimapa; ganás cuando solo queda tu equipo.
 - DISEÑOS DE ROPA: Marino, Camuflaje bosque, Camuflaje desierto, Camuflaje nieve, Urbano nocturno y Dorado (se compran con oro en el lobby).
@@ -33,4 +36,4 @@ Cómo usarla (hace falta subir TODOS los archivos a un hosting con HTTPS)
 3) Menú de Chrome (tres puntos) > "Instalar app" o "Agregar a la pantalla principal".
 4) Abrila desde el ícono. Probá una vez en modo avión para confirmar que anda sin internet.
 
-Si actualizás el juego, cambiá V='uz-v9' por V='uz-v10' en sw.js para que los celulares bajen la versión nueva.
+Si actualizás el juego, cambiá V='uz-v10' por V='uz-v11' en sw.js para que los celulares bajen la versión nueva.

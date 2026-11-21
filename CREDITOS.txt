@@ -4,3 +4,5 @@ ciudad.glb y naturaleza.glb son selecciones de esas piezas, reempaquetadas con t
 
 agente_m.glb y agente_f.glb combinan la ropa Ranger del proyecto con la cabeza, ojos, cejas y peinados de Universal Base Characters (Quaternius, CC0). Cascos, chalecos y mochilas son modelos propios simples.
 anim_m.json y anim_f.json son las animaciones Jump Up y Flying Knee Punch Combo del X Bot de Mixamo (Adobe), traducidas al esqueleto del juego.
+
+char_*.glb: personajes aportados por el autor del proyecto (ninja, cyborg, guerrero de cuero, médico de la peste, atleta, samurái y bases hombre/mujer), reducidos a ~24 mil triángulos, con textura de 1024 px y enlazados al esqueleto del juego. Revisá la licencia de origen de esos modelos antes de publicar el juego.

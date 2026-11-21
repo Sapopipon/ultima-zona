@@ -66,6 +66,8 @@ body.lobby #hud,body.lobby .cb,body.lobby #cfg,body.lobby #ring,body.lobby #ed{d
 .ch{display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap}.ch button,.sw button{font:inherit;font-weight:700;color:var(--fg);background:rgba(255,255,255,.08);border:2px solid transparent;border-radius:10px;padding:7px 4px;flex:1;-webkit-tap-highlight-color:transparent}.ch button.on,.sw button.on{border-color:var(--ac)}
 .sw{display:flex;gap:7px;flex-wrap:wrap}.sw button{flex:none;width:36px;height:36px;border-radius:50%;padding:0;font-size:12px;line-height:1}.sw.big button{width:46px;height:46px;border-radius:12px;color:#fff;text-shadow:0 0 3px #000}.sw button small{display:block;font-size:10px;opacity:1}
 .lg{display:grid;grid-template-columns:1fr auto;gap:5px 10px}.lg span{opacity:.85}#lt{color:#ffd37a;min-height:16px;margin-top:8px;font-weight:700;font-size:12px}
+/* tarjetas de personajes */
+.cg{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.cc{font:inherit;color:var(--fg);background:rgba(255,255,255,.08);border:2px solid transparent;border-radius:10px;padding:5px;display:flex;flex-direction:column;align-items:center;gap:2px;-webkit-tap-highlight-color:transparent}.cc.on{border-color:var(--ac)}.cc img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;background:#222a34}.cc b{font-size:12px;line-height:1.15;text-align:center}.cc span{font-size:11px;opacity:.9}
 #lp{position:absolute;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(300px,42vw);height:58px;font:inherit;font-weight:900;font-size:1.35rem;letter-spacing:.06em;border:0;border-radius:14px;background:linear-gradient(#ffc247,#f2a516);color:#1a1200;box-shadow:0 4px 0 #a86a05,0 8px 18px rgba(0,0,0,.45);-webkit-tap-highlight-color:transparent}#lp:active{transform:translateY(2px)}#lp:disabled{opacity:.6;box-shadow:none}
 #ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--pn);text-align:center;padding:20px}
 #ov.h{display:none}
@@ -169,15 +171,16 @@ if(!mM||!mJ)throw Error('faltan materiales');
 MDL.mM=mM;MDL.mJ=mJ}
 /* personajes Ranger (varón y mujer): mismo esqueleto, se ajusta la altura de la cadera */
 const BODYCFG={ranger_m:{id:'m',lift:.008,gun:[-.0066,.0845,.0826]},ranger_f:{id:'f',lift:.02,gun:[-.004,.0713,.0844]}};
-function addBody(gl,cfg){const root=gl.scene,pu=MDL.scene.getObjectByName('pelvis').position,pg=root.getObjectByName('pelvis').position,k=pg.z/pu.z;
+function addBody(gl,cfg,opts){const root=gl.scene,pu=MDL.scene.getObjectByName('pelvis').position,pg=root.getObjectByName('pelvis').position,k=pg.z/pu.z;
 const pf=t=>{const v=Array.from(t.values),n=v.length/3;for(let i=0;i<n;i++){v[i*3]=(v[i*3]-pu.x)*k+pg.x;v[i*3+1]=(v[i*3+1]-pu.y)*k+pg.y;v[i*3+2]=(v[i*3+2]-pu.z)*k+pg.z}return new THREE.VectorKeyframeTrack(t.name,t.times,v)};
-const r=mkClips(pf);let mR=null,mS=null;const neo={};root.traverse(o=>{if(o.isMesh){const nm=o.material.name;if(nm==='MI_Ranger')mR=o.material;else if(nm==='MI_Skin')mS=o.material;else if(nm==='MI_Head')neo.mH=o.material;else if(nm==='MI_Eyes')neo.mE=o.material;else if(nm.startsWith('HAIR_'))(neo.mHr=neo.mHr||{})[nm]=o.material;else if(nm.startsWith('ACC_'))(neo.mAc=neo.mAc||{})[nm]=o.material}});
-if(!mR||!mS)throw Error('materiales ranger');
-const bd={id:cfg.id,scene:root,clips:r.clips,lift:cfg.lift,po:.3,gun:cfg.gun,mR,mS};
-if(neo.mH&&neo.mHr&&neo.mAc){bd.neo=true;bd.mH=neo.mH;bd.mHr=neo.mHr;bd.mAc=neo.mAc;bd.mEc=neo.mE.clone();bd.mEc.skinning=true;bd.cH={};bd.cHr={};for(const k in neo.mAc)neo.mAc[k].skinning=true;neo.mH.skinning=true;bd.hairs=Object.keys(neo.mHr).map(k=>k.slice(5)).filter(k=>k!=='cejas'&&k!=='barb')}
+const r=mkClips(pf);let mR=null,mS=null;const neo={};root.traverse(o=>{if(o.isMesh){const nm=o.material.name;if(nm==='MI_Ranger')mR=o.material;else if(nm==='MI_Skin')mS=o.material;else if(nm==='MC_char')neo.mC=o.material;else if(nm==='MI_Head')neo.mH=o.material;else if(nm==='MI_Eyes')neo.mE=o.material;else if(nm.startsWith('HAIR_'))(neo.mHr=neo.mHr||{})[nm]=o.material;else if(nm.startsWith('ACC_'))(neo.mAc=neo.mAc||{})[nm]=o.material}});
+if(!neo.mC&&(!mR||!mS))throw Error('materiales ranger');
+const bd={id:(opts&&opts.id)||cfg.id,scene:root,clips:r.clips,lift:(opts&&opts.lift!=null)?opts.lift:cfg.lift,po:.3,gun:cfg.gun,mR,mS};
+if(neo.mC&&neo.mAc){bd.chr=true;bd.mC=neo.mC;bd.mC.skinning=true;bd.mAc=neo.mAc;for(const k in neo.mAc)neo.mAc[k].skinning=true}
+if(!bd.chr&&neo.mH&&neo.mHr&&neo.mAc){bd.neo=true;bd.mH=neo.mH;bd.mHr=neo.mHr;bd.mAc=neo.mAc;bd.mEc=neo.mE.clone();bd.mEc.skinning=true;bd.cH={};bd.cHr={};for(const k in neo.mAc)neo.mAc[k].skinning=true;neo.mH.skinning=true;bd.hairs=Object.keys(neo.mHr).map(k=>k.slice(5)).filter(k=>k!=='cejas'&&k!=='barb')}
 MDL.bodies.push(bd)}
 function addExtra(B,j){const mk=c=>{const tr=[];for(const n in c.b){const d=c.b[n];tr.push(new THREE.QuaternionKeyframeTrack(n+'.quaternion',d.t,d.q))}tr.push(new THREE.VectorKeyframeTrack('pelvis.position',c.p.t,c.p.v));return new THREE.AnimationClip(c.n,c.dur,tr)};B.clips.melee=mk(j.melee);B.clips.jumpP=mk(j.jump)}
-function exFin(gx,cb){const B=MDL.bodies.find(b=>b.id===gx);if(!B){cb();return}fetch('anim_'+gx+'.json').then(r=>r.json()).then(j=>addExtra(B,j)).catch(er=>console.warn(er)).then(cb)}
+function exFin(gx,cb){const B=MDL.bodies.find(b=>b.id===gx);if(!B){cb();return}fetch('anim_'+gx+'.json').then(r=>r.json()).then(j=>{MDL.exj=MDL.exj||{};MDL.exj[gx]=j;addExtra(B,j)}).catch(er=>console.warn(er)).then(cb)}
 function loadBodies(cb){let pend=1;const fin=()=>{if(--pend===0)cb()};
 const gl=new THREE.GLTFLoader(),tl=new THREE.TextureLoader();
 for(const gx of ['m','f']){pend++;const old='ranger_'+gx,nw='agente_'+gx,tryOld=()=>gl.load(old+'.glb',g=>{try{addBody(g,BODYCFG[old])}catch(er){console.warn(er)}exFin(gx,fin)},undefined,er=>{console.warn(er);fin()});
@@ -186,16 +189,18 @@ for(const c of ['verde','arena','gris','rojo','azul','camo','desierto','nieve','
 fin()}
 function mkEntM(n,bot,tm){
 const p=free(),g=new THREE.Group(),R4=a=>a[Math.floor(Math.random()*a.length)],sk=(!bot&&LOBBY.skin)?LOBBY.skin:R4([0xf4d0ae,0xe8b58d,0xc98c62,0x9a6348,0x70452f]);
-const pool=bot?MDL.bodies:MDL.bodies.filter(b=>b.id===LOBBY.body),B=(MDL.bodies.length&&MDL.tex.verde)?R4(pool.length?pool:MDL.bodies):null;
+const pool=bot?MDL.bodies.filter(b=>!b.chr):MDL.bodies.filter(b=>b.id===LOBBY.body),B=(MDL.bodies.length&&MDL.tex.verde)?R4(pool.length?pool:MDL.bodies.filter(b=>!b.chr)):null;
 const mdl=THREE.SkeletonUtils.clone(B?B.scene:MDL.scene);mdl.rotation.y=Math.PI;g.add(mdl);
 const hand=mdl.getObjectByName('hand_r'),head=mdl.getObjectByName('Head'),chest=mdl.getObjectByName('spine_03');
 let CL=MDL.clips,parts=null,det=null,hairKey=null,beardF=false;
 if(B){CL=B.clips;mdl.position.y=B.lift;
 if(!MDL.cols){MDL.cols=['arena','gris','rojo','azul','camo','desierto','nieve','noche','dorado'].filter(c=>MDL.tex[c]);if(!MDL.cols.length)MDL.cols=['verde']}
 const col=bot?(tm>0?MDL.cols[(tm-1)%MDL.cols.length]:tm===0?(MDL.tex[LOBBY.col]?LOBBY.col:'verde'):R4(MDL.cols)):(MDL.tex[LOBBY.col]?LOBBY.col:'verde');
-const mR=MDL.rm[col]||(MDL.rm[col]=(()=>{const m=B.mR.clone();m.map=MDL.tex[col];m.color.setHex(0xffffff);m.roughness=.85;m.metalness=0;m.skinning=true;return m})());
-const mS=B.mS.clone();mS.color.setHex(sk);mS.skinning=true;
-if(B.neo){
+const mR=B.chr?null:MDL.rm[col]||(MDL.rm[col]=(()=>{const m=B.mR.clone();m.map=MDL.tex[col];m.color.setHex(0xffffff);m.roughness=.85;m.metalness=0;m.skinning=true;return m})());
+const mS=B.chr?null:B.mS.clone();if(mS){mS.color.setHex(sk);mS.skinning=true}
+if(B.chr){
+parts={H:{},V:{},P:{},hair:{}};det=[];mdl.traverse(o=>{if(!o.isMesh)return;const nm=o.material.name;o.receiveShadow=true;if(nm.startsWith('ACC_')){o.castShadow=false;o.material=B.mAc[nm];parts[nm[4]][+nm[5]]=o}else{o.material=B.mC;o.castShadow=true}})}
+else if(B.neo){
 const hk=bot?R4(B.hairs):(B.hairs.includes(LOBBY.hair)?LOBBY.hair:B.hairs[0]),hcN=bot?Math.floor(Math.random()*HAIRC.length):(LOBBY.hairc|0),hcc=HAIRC[hcN]||HAIRC[1];
 beardF=bot?(B.id==='m'&&Math.random()<.3):(B.id==='m'&&!!LOBBY.beard);hairKey=hk;parts={H:{},V:{},P:{},hair:{}};det=[];
 const memo=(M,key,fn)=>M[key]||(M[key]=fn());
@@ -429,13 +434,18 @@ function applyEq(e){const q=e.parts;if(!q)return;for(let L=1;L<=3;L++){if(q.H[L]
 for(const k in q.hair)q.hair[k].visible=k==='barb'?!!e.beard:(k===e.hairKey&&!e.eq.h)}
 function eqRed(e){return e.eq?ITM.chaleco.red[e.eq.v]+ITM.casco.red[e.eq.h]:0}
 /* ===== Lobby (menú principal con personaje en 3D, nivel, oro, trajes y dificultad) ===== */
+const CHARS=[{id:'m',n:'Ranger',p:0},{id:'f',n:'Ranger mujer',p:0},{id:'man',n:'Hombre base',p:0,g:'m',f:'char_man.glb'},{id:'woman',n:'Mujer base',p:0,g:'f',f:'char_woman.glb'},{id:'athlete',n:'Atleta',p:700,g:'f',f:'char_athlete.glb'},{id:'ninja',n:'Ninja',p:800,g:'m',f:'char_ninja.glb'},{id:'doctor',n:'Médico de la peste',p:900,g:'m',f:'char_doctor.glb'},{id:'warrior',n:'Guerrero de cuero',p:1000,g:'m',f:'char_warrior.glb'},{id:'cyborg',n:'Cyborg',p:1200,g:'m',f:'char_cyborg.glb'},{id:'samurai',n:'Samurái',p:1500,g:'m',f:'char_samurai.glb'}],
+CMY={man:-.048,woman:-.053,ninja:-.074,cyborg:-.096,warrior:-.074,doctor:-.078,athlete:-.103,samurai:-.059},CHL={};
+function loadChar(id,cb){const c=CHARS.find(x=>x.id===id);if(!MDL||!c||!c.f||MDL.bodies.some(b=>b.id===id)){cb(true);return}
+if(CHL[id]){CHL[id].push(cb);return}CHL[id]=[cb];const done=ok=>{const L=CHL[id]||[];delete CHL[id];L.forEach(f=>f(ok))};
+new THREE.GLTFLoader().load(c.f,g=>{let ok=true;try{addBody(g,BODYCFG['ranger_'+c.g],{id,lift:-CMY[id]});const j=MDL.exj&&MDL.exj[c.g],B=MDL.bodies.find(b=>b.id===id);if(j&&B)addExtra(B,j)}catch(er){console.warn(er);ok=false}done(ok)},undefined,er=>{console.warn(er);done(false)})}
 const LOBBY={name:'Vos',body:'m',col:'verde',skin:0xe8b58d,hair:'cort',hairc:1,beard:false},SKINS=[0xf4d0ae,0xe8b58d,0xc98c62,0x9a6348,0x70452f],SUITS={verde:{p:0},arena:{p:0},azul:{p:400},gris:{p:300},rojo:{p:500},camo:{p:600},desierto:{p:600},nieve:{p:800},noche:{p:900},dorado:{p:1500}},SN={verde:'Ranger',arena:'Arena',azul:'Marino',gris:'Gris',rojo:'Carmesí',camo:'Camuflaje bosque',desierto:'Camuflaje desierto',nieve:'Camuflaje nieve',noche:'Urbano nocturno',dorado:'Dorado'},
 SW={verde:'#5b7a3a',arena:'#b49a64',gris:'#808890',rojo:'#b04035',azul:'#2c5aa0',camo:'linear-gradient(135deg,#34421f,#59622f 45%,#6e5434)',desierto:'linear-gradient(135deg,#cdb27c,#a58a5c 50%,#7c6240)',nieve:'linear-gradient(135deg,#f0f3f7,#bcc8d8 50%,#8fa2bd)',noche:'linear-gradient(135deg,#1c1e22,#3a3e45 50%,#121316)',dorado:'#c49e2a'},
 DIFN=['Fácil','Normal','Difícil'],DIFD=[.3,.5,.8],DIFC=[2.6,2,1.5],DIFR=[.7,1,1.4];
-let SV={name:'Vos',gold:0,xp:0,games:0,wins:0,kills:0,best:20,body:'m',col:'verde',skin:1,unl:['verde','arena'],dif:1,hair:'cort',hairc:1,beard:false,mode:0},READY=false,lobOn=false,pv=null,lobYaw=0,lobT=0,lobLast=0,LG=null,lobTab='home',toastT=0,starting=false,rchk=0,rcn=0;
-try{const j=JSON.parse(localStorage.getItem('uz3d_save')||'null');if(j&&typeof j==='object')SV=Object.assign(SV,j);if(!Array.isArray(SV.unl))SV.unl=['verde','arena']}catch(e){}
+let SV={name:'Vos',gold:0,xp:0,games:0,wins:0,kills:0,best:20,body:'m',col:'verde',skin:1,unl:['verde','arena'],uc:['m','f','man','woman'],dif:1,hair:'cort',hairc:1,beard:false,mode:0},READY=false,lobOn=false,pv=null,lobYaw=0,lobT=0,lobLast=0,LG=null,lobTab='home',toastT=0,starting=false,rchk=0,rcn=0;
+try{const j=JSON.parse(localStorage.getItem('uz3d_save')||'null');if(j&&typeof j==='object')SV=Object.assign(SV,j);if(!Array.isArray(SV.unl))SV.unl=['verde','arena'];if(!Array.isArray(SV.uc))SV.uc=['m','f','man','woman']}catch(e){}
 function saveSV(){try{localStorage.setItem('uz3d_save',JSON.stringify(SV))}catch(e){}}
-function syncLobby(){LOBBY.name=String(SV.name||'Vos').trim().slice(0,12)||'Vos';LOBBY.body=SV.body==='f'?'f':'m';LOBBY.col=SV.unl.includes(SV.col)?SV.col:'verde';LOBBY.skin=SKINS[SV.skin]||SKINS[1];LOBBY.hair=SV.hair||'cort';LOBBY.hairc=SV.hairc==null?1:SV.hairc;LOBBY.beard=!!SV.beard}
+function syncLobby(){LOBBY.name=String(SV.name||'Vos').trim().slice(0,12)||'Vos';LOBBY.body=CHARS.some(c=>c.id===SV.body)?SV.body:'m';LOBBY.col=SV.unl.includes(SV.col)?SV.col:'verde';LOBBY.skin=SKINS[SV.skin]||SKINS[1];LOBBY.hair=SV.hair||'cort';LOBBY.hairc=SV.hairc==null?1:SV.hairc;LOBBY.beard=!!SV.beard}
 function buildLG(){if(LG)return;LG=new THREE.Group();LG.position.set(1500,0,1500);
 const pl=new THREE.Mesh(new THREE.CylinderGeometry(1.7,1.9,.18,40),new THREE.MeshStandardMaterial({color:0x2a3340,roughness:.6,metalness:.3}));pl.position.y=.09;LG.add(pl);
 const rg=new THREE.Mesh(new THREE.TorusGeometry(1.75,.045,8,48),new THREE.MeshBasicMaterial({color:0xf2a516}));rg.rotation.x=Math.PI/2;rg.position.y=.19;LG.add(rg);
@@ -454,8 +464,8 @@ document.body.classList.add('lobby');$('ov').classList.add('h');$('lobby').class
 if(world)sc.remove(world);world=new THREE.Group();sc.add(world);pv=null;buildLG();LG.visible=true;lobbyPreview();renderLobbyUI();
 if(!lobOn){lobOn=true;lobLast=performance.now();requestAnimationFrame(lobbyLoop)}}
 function startGame(){if(!READY||starting)return;starting=true;rchk=0;rcn=0;SV.name=String(SV.name||'Vos').trim().slice(0,12)||'Vos';saveSV();syncLobby();lobOn=false;if(LG)LG.visible=false;pv=null;$('lobby').classList.add('h');document.body.classList.remove('lobby');$('ld').classList.remove('h');
-setTimeout(()=>{try{init()}catch(er){showErr(er,'[init] ');if(PK.city||PK.nat){PK.city=null;PK.nat=null;try{init();showErr('Se usó el mundo básico porque fallaron los modelos nuevos.','[aviso] ')}catch(er2){showErr(er2,'[init 2] ')}}}
-try{ren.compile(sc,cam)}catch(er){showErr(er,'[compile] ')}$('ld').classList.add('h');starting=false},80)}
+loadChar(LOBBY.body,()=>setTimeout(()=>{try{init()}catch(er){showErr(er,'[init] ');if(PK.city||PK.nat){PK.city=null;PK.nat=null;try{init();showErr('Se usó el mundo básico porque fallaron los modelos nuevos.','[aviso] ')}catch(er2){showErr(er2,'[init 2] ')}}}
+try{ren.compile(sc,cam)}catch(er){showErr(er,'[compile] ')}$('ld').classList.add('h');starting=false},80))}
 function toast(t){const e=$('lt');e.textContent=t;clearTimeout(toastT);toastT=setTimeout(()=>{e.textContent=''},2200)}
 function hairBtns(){const B=MDL&&MDL.bodies?MDL.bodies.find(b=>b.id===SV.body&&b.neo):null;if(!B)return '<small>Disponible al terminar de cargar.</small>';let h=B.hairs.map(k=>'<button data-a="hair" data-v="'+k+'" class="'+(SV.hair===k?'on':'')+'">'+(HN[k]||k)+'</button>').join('');if(SV.body==='m')h+='<button data-a="beard" data-v="1" class="'+(SV.beard?'on':'')+'">Barba</button>';return h}
 function renderLobbyUI(){const lv=1+Math.floor(SV.xp/100);
@@ -463,11 +473,11 @@ if($('lname').value!==SV.name)$('lname').value=SV.name;$('lav').textContent=Stri
 for(const b of $('lrail').children)b.classList.toggle('on',b.dataset.t===lobTab);
 let h='';
 if(lobTab==='home')h='<h3>Modo de juego</h3><div class="ch">'+['Solo','Dúo','Trío'].map((n,i)=>'<button data-a="mode" data-v="'+i+'" class="'+((SV.mode|0)===i?'on':'')+'">'+n+'</button>').join('')+'</div><div class="lc"><b>Battle Royale</b><small>'+['Todos contra todos · 19 bots','Vos + 1 aliado contra 9 equipos de 2','Vos + 2 aliados contra 6 equipos de 3'][SV.mode|0]+' · zona que se cierra</small></div><h3>Dificultad</h3><div class="ch">'+DIFN.map((n,i)=>'<button data-a="dif" data-v="'+i+'" class="'+(SV.dif===i?'on':'')+'">'+n+'</button>').join('')+'</div><small>Más difícil = más oro y XP (x'+DIFR[SV.dif]+')</small><h3>Estadísticas</h3><div class="lg"><span>Partidas</span><b>'+SV.games+'</b><span>Victorias</span><b>'+SV.wins+'</b><span>Eliminaciones</span><b>'+SV.kills+'</b><span>Mejor puesto</span><b>'+(SV.games?'#'+SV.best:'-')+'</b></div>';
-else if(lobTab==='char')h='<h3>Cuerpo</h3><div class="ch"><button data-a="body" data-v="m" class="'+(SV.body==='m'?'on':'')+'">Hombre</button><button data-a="body" data-v="f" class="'+(SV.body==='f'?'on':'')+'">Mujer</button></div><h3>Peinado</h3><div class="ch">'+hairBtns()+'</div><h3>Color de pelo</h3><div class="sw">'+HAIRC.map((c,i)=>'<button data-a="hairc" data-v="'+i+'" class="'+(SV.hairc===i?'on':'')+'" style="background:#'+c.toString(16).padStart(6,'0')+'"></button>').join('')+'</div><h3>Piel</h3><div class="sw">'+SKINS.map((c,i)=>'<button data-a="skin" data-v="'+i+'" class="'+(SV.skin===i?'on':'')+'" style="background:#'+c.toString(16).padStart(6,'0')+'"></button>').join('')+'</div><h3>Traje</h3><div class="sw big">'+Object.keys(SUITS).map(k=>'<button data-a="suit" data-v="'+k+'" class="'+(SV.col===k?'on':'')+'" title="'+SN[k]+'" style="background:'+SW[k]+'">'+(SV.unl.includes(k)?'':'🔒<small>'+SUITS[k].p+'</small>')+'</button>').join('')+'</div><small>Ganás oro con eliminaciones y victorias.</small>';
+else if(lobTab==='char'){const rg=SV.body==='m'||SV.body==='f';h='<h3>Personaje</h3><div class="cg">'+CHARS.map(c=>'<button data-a="chr" data-v="'+c.id+'" class="cc'+(SV.body===c.id?' on':'')+'"><img src="th_'+c.id+'.webp" alt=""><b>'+c.n+'</b><span>'+(SV.uc.includes(c.id)?(SV.body===c.id?'Elegido':'Tuyo'):'🔒 '+c.p)+'</span></button>').join('')+'</div>'+(rg?'<h3>Peinado</h3><div class="ch">'+hairBtns()+'</div><h3>Color de pelo</h3><div class="sw">'+HAIRC.map((c,i)=>'<button data-a="hairc" data-v="'+i+'" class="'+(SV.hairc===i?'on':'')+'" style="background:#'+c.toString(16).padStart(6,'0')+'"></button>').join('')+'</div><h3>Piel</h3><div class="sw">'+SKINS.map((c,i)=>'<button data-a="skin" data-v="'+i+'" class="'+(SV.skin===i?'on':'')+'" style="background:#'+c.toString(16).padStart(6,'0')+'"></button>').join('')+'</div><h3>Traje</h3><div class="sw big">'+Object.keys(SUITS).map(k=>'<button data-a="suit" data-v="'+k+'" class="'+(SV.col===k?'on':'')+'" title="'+SN[k]+'" style="background:'+SW[k]+'">'+(SV.unl.includes(k)?'':'🔒<small>'+SUITS[k].p+'</small>')+'</button>').join('')+'</div>':'<small>Este personaje trae su propio diseño. Los trajes, el peinado y la piel son para el Ranger.</small>')+'<small>Ganás oro con eliminaciones y victorias.</small>'}
 else h='<h3>Cómo jugar</h3><small>Buscá armas, botiquines y munición (también dentro de las casas), mantenete dentro de la zona segura y sé el último en pie. Cada enemigo que abatís te devuelve vida.<br><br><b>PC:</b> clic para capturar el mouse, WASD mover, mouse mirar, clic disparar, clic derecho mira, Shift correr, Espacio saltar, F golpe cuerpo a cuerpo, G granada, Q muro de hielo, C agachar, Z acostar, V cambiar vista, R recargar.<br><br><b>Celular (horizontal):</b> izquierda para moverte, derecha para mirar, y los botones FUEGO, Mira, Correr, Saltar, Golpe, Granada, Muro, Agachar, Acostar, Vista y Recargar. Con ⚙ Ajustes (dentro de la partida) movés y agrandás los botones.</small>';
 $('lph').innerHTML=h}
 $('lpanel').addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
-if(a==='dif')SV.dif=+v;else if(a==='mode')SV.mode=+v;else if(a==='body'){SV.body=v;lobbyPreview()}else if(a==='skin'){SV.skin=+v;lobbyPreview()}else if(a==='hair'){SV.hair=v;lobbyPreview()}else if(a==='hairc'){SV.hairc=+v;lobbyPreview()}else if(a==='beard'){SV.beard=!SV.beard;lobbyPreview()}
+if(a==='chr'){const c=CHARS.find(x=>x.id===v);if(!SV.uc.includes(v)){if(SV.gold<c.p){toast('Te faltan '+(c.p-SV.gold)+' 🪙 de oro');return}SV.gold-=c.p;SV.uc.push(v);toast('¡'+c.n+' desbloqueado!')}else toast(c.f?'Cargando '+c.n+'…':c.n);SV.body=v;lobbyPreview();loadChar(v,ok=>{if(SV.body===v){lobbyPreview();if(!ok)toast('No se pudo cargar el personaje')}})}else if(a==='dif')SV.dif=+v;else if(a==='mode')SV.mode=+v;else if(a==='body'){SV.body=v;lobbyPreview()}else if(a==='skin'){SV.skin=+v;lobbyPreview()}else if(a==='hair'){SV.hair=v;lobbyPreview()}else if(a==='hairc'){SV.hairc=+v;lobbyPreview()}else if(a==='beard'){SV.beard=!SV.beard;lobbyPreview()}
 else if(a==='suit'){if(!SV.unl.includes(v)){const p=SUITS[v].p;if(SV.gold<p){toast('Te faltan '+(p-SV.gold)+' 🪙 de oro');return}SV.gold-=p;SV.unl.push(v);toast('¡Traje desbloqueado!')}SV.col=v;lobbyPreview()}
 saveSV();renderLobbyUI()});
 $('lrail').addEventListener('click',e=>{const b=e.target.closest('button[data-t]');if(!b)return;lobTab=b.dataset.t;renderLobbyUI()});
