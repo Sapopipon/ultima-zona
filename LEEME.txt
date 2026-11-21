@@ -1,6 +1,8 @@
 ÚLTIMA ZONA 3D – versión instalable (PWA)
 
 Novedades de esta versión
+- TABLET: controles táctiles también en tablets (iPad y Android). Botones, joystick, minimapa y textos se agrandan según el tamaño de la pantalla,
+  se puede jugar en vertical, y la pantalla completa funciona en iPad (Safari). Se evita el zoom por doble toque o pellizco.
 - ELEGÍ TU PERSONAJE en el lobby (pestaña Personaje): Ranger, Ranger mujer, Hombre base y Mujer base son gratis; Atleta 700, Ninja 800,
   Médico de la peste 900, Guerrero de cuero 1000, Cyborg 1200 y Samurái 1500 se compran con oro. Cada uno se descarga la primera vez que lo elegís.
   Archivos: char_*.glb y th_*.webp (subilos todos).
@@ -36,4 +38,4 @@ Cómo usarla (hace falta subir TODOS los archivos a un hosting con HTTPS)
 3) Menú de Chrome (tres puntos) > "Instalar app" o "Agregar a la pantalla principal".
 4) Abrila desde el ícono. Probá una vez en modo avión para confirmar que anda sin internet.
 
-Si actualizás el juego, cambiá V='uz-v10' por V='uz-v11' en sw.js para que los celulares bajen la versión nueva.
+Si actualizás el juego, cambiá V='uz-v11' por V='uz-v12' en sw.js para que los celulares bajen la versión nueva.
