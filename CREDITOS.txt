@@ -1,3 +1,6 @@
 Modelos 3D de Quaternius (licencia CC0 1.0, dominio público): Downtown City MegaKit (Standard), Stylized Nature MegaKit (Standard) y Universal Base Characters (Standard).
 https://quaternius.com
 ciudad.glb y naturaleza.glb son selecciones de esas piezas, reempaquetadas con texturas reducidas (WebP) para que carguen rápido en el celular.
+
+agente_m.glb y agente_f.glb combinan la ropa Ranger del proyecto con la cabeza, ojos, cejas y peinados de Universal Base Characters (Quaternius, CC0). Cascos, chalecos y mochilas son modelos propios simples.
+anim_m.json y anim_f.json son las animaciones Jump Up y Flying Knee Punch Combo del X Bot de Mixamo (Adobe), traducidas al esqueleto del juego.

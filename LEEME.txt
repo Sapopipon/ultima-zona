@@ -1,6 +1,12 @@
 ÚLTIMA ZONA 3D – versión instalable (PWA)
 
 Novedades de esta versión
+- PERSONAJES nuevos: sin capucha, con cabeza, pelo, cejas, ojos, nariz y boca (modelo base de Quaternius sobre la ropa Ranger).
+  En el lobby elegís peinado (corto, partido, largo, moño), barba (hombre) y color de pelo. Archivos: agente_m.glb y agente_f.glb.
+- EQUIPO estilo Free Fire: cascos, chalecos y mochilas de nivel 1 a 3 (se ven puestos en el personaje). Casco y chaleco reducen el daño;
+  la mochila da más munición al recoger. Aparecen por el mapa y en las casas, los bots también los usan y los sueltan al morir.
+- SALTO con animación de Mixamo (te agachás y despegás) y GOLPE cuerpo a cuerpo (tecla F o botón Golpe) con el combo de rodilla y puños.
+  Archivos: anim_m.json y anim_f.json.
 - LOBBY nuevo: tu personaje en 3D (arrastrá para girarlo), nombre, nivel y XP, oro, tienda de trajes, cuerpo y piel,
   dificultad (Fácil/Normal/Difícil) y estadísticas. Al terminar una partida ganás oro y XP, y volvés al lobby.
   Tu progreso se guarda en el teléfono (localStorage).
@@ -17,10 +23,10 @@ Qué hace
 - Funciona sin internet después de abrirla una vez con conexión.
 
 Cómo usarla (hace falta subir TODOS los archivos a un hosting con HTTPS)
-1) Subí TODOS los archivos de esta carpeta, juntos y sin cambiarles el nombre (incluidos ciudad.glb y naturaleza.glb), a un hosting estático gratuito:
+1) Subí TODOS los archivos de esta carpeta, juntos y sin cambiarles el nombre (incluidos los .glb y los .json), a un hosting estático gratuito:
    GitHub Pages, Netlify (Drop), Cloudflare Pages o Vercel.
 2) Abrí la dirección que te den desde Chrome en el celular y esperá a que cargue (con internet).
 3) Menú de Chrome (tres puntos) > "Instalar app" o "Agregar a la pantalla principal".
 4) Abrila desde el ícono. Probá una vez en modo avión para confirmar que anda sin internet.
 
-Si actualizás el juego, cambiá V='uz-v7' por V='uz-v8' en sw.js para que los celulares bajen la versión nueva.
+Si actualizás el juego, cambiá V='uz-v8' por V='uz-v9' en sw.js para que los celulares bajen la versión nueva.
