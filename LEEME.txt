@@ -1,6 +1,13 @@
 ÚLTIMA ZONA 3D – versión instalable (PWA)
 
 Novedades de esta versión
+- JUGAR CON AMIGOS (nuevo, hasta 6 jugadores): en el lobby, botón "Jugar con amigos". Uno crea la sala (es el anfitrión) y comparte el código o el link
+  (?sala=CODIGO) por WhatsApp. Modos: Todos contra todos con bots, En equipo contra los bots, y PvP sin bots.
+  Funciona por WebRTC con PeerJS (carga desde cdn.jsdelivr.net; no hace falta servidor propio). El anfitrión maneja los bots y la zona,
+  por eso conviene que sea el dispositivo más potente. Si el anfitrión sale, la partida termina para todos.
+  Límites de esta primera versión: en línea no están disponibles los muros de hielo, las granadas solo las ve quien las tira,
+  y las redes de datos móviles con CGNAT pueden bloquear la conexión (probar con la misma wifi o agregar un servidor TURN).
+- MODO LIVIANO automático en equipos con poca memoria (sin sombras ni suavizado de bordes, resolución menor). Se puede forzar agregando ?low=1 a la dirección, o apagar con ?low=0.
 - TABLET: controles táctiles también en tablets (iPad y Android). Botones, joystick, minimapa y textos se agrandan según el tamaño de la pantalla,
   se puede jugar en vertical, y la pantalla completa funciona en iPad (Safari). Se evita el zoom por doble toque o pellizco.
 - ELEGÍ TU PERSONAJE en el lobby (pestaña Personaje): Ranger, Ranger mujer, Hombre base y Mujer base son gratis; Atleta 700, Ninja 800,
@@ -38,4 +45,4 @@ Cómo usarla (hace falta subir TODOS los archivos a un hosting con HTTPS)
 3) Menú de Chrome (tres puntos) > "Instalar app" o "Agregar a la pantalla principal".
 4) Abrila desde el ícono. Probá una vez en modo avión para confirmar que anda sin internet.
 
-Si actualizás el juego, cambiá V='uz-v11' por V='uz-v12' en sw.js para que los celulares bajen la versión nueva.
+Si actualizás el juego, cambiá V='uz-v13' por V='uz-v14' en sw.js para que los celulares bajen la versión nueva.
